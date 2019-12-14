@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="LicensePlateDiscernView">
+        <attr name="lpd_discernRectTopMargin" format="dimension" />
+        <attr name="lpd_discernRectLRMargin" format="dimension" />
+        <attr name="lpd_discernRectWidth" format="dimension" />
+        <attr name="lpd_discernRectHeight" format="dimension" />
+        <attr name="lpd_maskColor" format="color" />
+        <attr name="lpd_angleLength" format="dimension" />
+        <attr name="lpd_angleStrokeWidth" format="dimension" />
+        <attr name="lpd_angleOffset" format="dimension" />
+        <attr name="lpd_angleColor" format="color" />
+        <attr name="lpd_borderSize" format="dimension" />
+        <attr name="lpd_borderColor" format="color" />
+        <attr name="lpd_isShowScanLine" format="boolean" />
+        <attr name="lpd_scanLineSize" format="dimension" />
+        <attr name="lpd_scanLineColor" format="color" />
+    </declare-styleable>
+
+</resources>

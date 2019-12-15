@@ -33,8 +33,8 @@ class LicensePlateDiscernView(
     private val mLicensePlateRecognizer by lazy { LicensePlateRecognizer(context) }
     private lateinit var mLicensePlateDiscernForeView: LicensePlateDiscernForeView
     private lateinit var mOnTaskDiscernListener: OnTaskDiscernListener
-    private lateinit var mSurfaceHolder: SurfaceHolder
 
+    private var mSurfaceHolder: SurfaceHolder? = null
     private var mCamera: Camera? = null
     private var mDiscernAsyncTask: DiscernAsyncTask? = null
     private var mCanHandleDiscern = true
@@ -51,9 +51,10 @@ class LicensePlateDiscernView(
         setBackgroundColor(Color.BLACK)
 
         val surfaceView = SurfaceView(context)
-        mSurfaceHolder = surfaceView.holder
-        mSurfaceHolder.setKeepScreenOn(true)
-        mSurfaceHolder.addCallback(this)
+        surfaceView.holder.run {
+            setKeepScreenOn(true)
+            addCallback(this@LicensePlateDiscernView)
+        }
         addView(surfaceView)
 
         mLicensePlateDiscernForeView = LicensePlateDiscernForeView(context, attrs)
@@ -105,12 +106,13 @@ class LicensePlateDiscernView(
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
-        if (context.checkPermission(Manifest.permission.CAMERA, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
-            initCamera()
-        }
+        mSurfaceHolder = holder
+        initCamera()
     }
 
     private fun initCamera() {
+        if (null == mSurfaceHolder || !hasCameraPermission()) return
+
         mCamera = Camera.open(0)
         mCamera!!.setDisplayOrientation(90) // 固定为后置摄像头竖屏
 
@@ -132,6 +134,11 @@ class LicensePlateDiscernView(
 
         mCamera!!.setPreviewCallback(this)
         mCamera!!.startPreview()
+    }
+
+
+    fun startPreview() {
+        initCamera()
     }
 
     /**
@@ -182,6 +189,10 @@ class LicensePlateDiscernView(
             }
         }
         return selectedFpsRange
+    }
+
+    private fun hasCameraPermission(): Boolean {
+        return context.checkPermission(Manifest.permission.CAMERA, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}

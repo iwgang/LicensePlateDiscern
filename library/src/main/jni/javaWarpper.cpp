@@ -25,7 +25,7 @@ std::string jstring2str(JNIEnv *env, jstring jstr) {
 
 extern "C" {
 JNIEXPORT jlong JNICALL
-Java_cn_iwgang_licenseplatediscern_LprDiscernCore_init(
+Java_cn_iwgang_licenseplatediscern_lpr_LprDiscernCore_init(
         JNIEnv *env, jobject obj,
         jstring detector_filename,
         jstring finemapping_prototxt, jstring finemapping_caffemodel,
@@ -56,7 +56,7 @@ Java_cn_iwgang_licenseplatediscern_LprDiscernCore_init(
 
 
 JNIEXPORT jstring JNICALL
-Java_cn_iwgang_licenseplatediscern_LprDiscernCore_discern(
+Java_cn_iwgang_licenseplatediscern_lpr_LprDiscernCore_discern(
         JNIEnv *env, jobject obj,
         jlong matPtr, jlong object_pr) {
     pr::PipelinePR *PR = (pr::PipelinePR *) object_pr;

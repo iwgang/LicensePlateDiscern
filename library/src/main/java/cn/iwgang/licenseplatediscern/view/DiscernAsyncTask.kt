@@ -2,8 +2,7 @@ package cn.iwgang.licenseplatediscern.view
 
 import android.graphics.*
 import android.os.AsyncTask
-import android.text.TextUtils
-import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
+import cn.iwgang.licenseplatediscern.LicensePlateRecognizer
 import java.io.ByteArrayOutputStream
 
 typealias OnTaskDiscernListener = (String?) -> Unit
@@ -19,6 +18,7 @@ class DiscernAsyncTask constructor(
         private val previewHeight: Int,
         private val discernRect: Rect,
         private val data: ByteArray,
+        private val licensePlateRecognizer: LicensePlateRecognizer,
         private val onTaskDiscernListener: OnTaskDiscernListener
 ) : AsyncTask<Void, Void, String>() {
 
@@ -35,23 +35,14 @@ class DiscernAsyncTask constructor(
             val matrix = Matrix()
             matrix.postRotate(90f)
             val bitmap = Bitmap.createBitmap(bmp, discernRect.top, discernRect.left, discernRect.bottom - discernRect.top, discernRect.right - discernRect.left, matrix, true)
-            return LicensePlateDiscernCore.discern(bitmap)
+            return licensePlateRecognizer.discern(bitmap)?.firstOrNull()
         } catch (ex: Exception) {
-            return null
         }
-
+        return null
     }
 
     override fun onPostExecute(str: String?) {
         super.onPostExecute(str)
-        if (!TextUtils.isEmpty(str)) {
-            if (str!!.contains(",")) {
-                onTaskDiscernListener(str.split(",")[0])
-            } else {
-                onTaskDiscernListener(str)
-            }
-        } else {
-            onTaskDiscernListener(null)
-        }
+        onTaskDiscernListener(str)
     }
 }

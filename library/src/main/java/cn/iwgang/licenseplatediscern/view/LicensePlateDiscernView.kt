@@ -1,6 +1,9 @@
 package cn.iwgang.licenseplatediscern.view
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.Camera
 import android.os.AsyncTask
@@ -10,7 +13,7 @@ import android.util.Size
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
-import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
+import cn.iwgang.licenseplatediscern.LicensePlateRecognizer
 import java.io.IOException
 import kotlin.math.abs
 
@@ -27,12 +30,14 @@ class LicensePlateDiscernView(
         attrs: AttributeSet,
         defStyleAttr: Int
 ) : FrameLayout(context, attrs, defStyleAttr), SurfaceHolder.Callback, Camera.PreviewCallback {
+    private val mLicensePlateRecognizer by lazy { LicensePlateRecognizer(context) }
     private lateinit var mLicensePlateDiscernForeView: LicensePlateDiscernForeView
     private lateinit var mOnTaskDiscernListener: OnTaskDiscernListener
+    private lateinit var mSurfaceHolder: SurfaceHolder
 
     private var mCamera: Camera? = null
     private var mDiscernAsyncTask: DiscernAsyncTask? = null
-    private var isDiscern = false
+    private var mCanHandleDiscern = true
     private var mOnDiscernListener: OnDiscernListener? = null
 
 
@@ -43,10 +48,12 @@ class LicensePlateDiscernView(
     }
 
     private fun initView(context: Context, attrs: AttributeSet) {
+        setBackgroundColor(Color.BLACK)
+
         val surfaceView = SurfaceView(context)
-        val surfaceHolder = surfaceView.holder
-        surfaceHolder.setKeepScreenOn(true)
-        surfaceHolder.addCallback(this)
+        mSurfaceHolder = surfaceView.holder
+        mSurfaceHolder.setKeepScreenOn(true)
+        mSurfaceHolder.addCallback(this)
         addView(surfaceView)
 
         mLicensePlateDiscernForeView = LicensePlateDiscernForeView(context, attrs)
@@ -55,8 +62,7 @@ class LicensePlateDiscernView(
         mOnTaskDiscernListener = object : OnTaskDiscernListener {
             override fun invoke(lp: String?) {
                 if (!TextUtils.isEmpty(lp)) {
-                    mCamera!!.setPreviewCallback(null)
-                    isDiscern = true
+                    mCanHandleDiscern = false
                     mOnDiscernListener?.invoke(lp!!)
                 }
             }
@@ -73,22 +79,19 @@ class LicensePlateDiscernView(
     }
 
     /**
-     * 重新再识别
+     * 重新识别
      */
     fun reDiscern() {
-        isDiscern = false
-        mCamera!!.setPreviewCallback(this)
+        mCanHandleDiscern = true
     }
 
     fun onResume() {
-        LicensePlateDiscernCore.onResume(context)
+        mLicensePlateRecognizer.onResume()
     }
 
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         val taskStatus = mDiscernAsyncTask?.status
-        if (isDiscern || null == mOnDiscernListener || taskStatus == AsyncTask.Status.PENDING || taskStatus == AsyncTask.Status.RUNNING) {
-            return
-        }
+        if (!mCanHandleDiscern || null == mOnDiscernListener || taskStatus == AsyncTask.Status.PENDING || taskStatus == AsyncTask.Status.RUNNING) return
 
         val size = mCamera!!.parameters.previewSize
         mDiscernAsyncTask = DiscernAsyncTask(
@@ -96,11 +99,18 @@ class LicensePlateDiscernView(
                 previewHeight = size.height,
                 discernRect = mLicensePlateDiscernForeView.getDiscernRect(),
                 data = data,
-                onTaskDiscernListener = mOnTaskDiscernListener
+                onTaskDiscernListener = mOnTaskDiscernListener,
+                licensePlateRecognizer = mLicensePlateRecognizer
         ).apply { execute() }
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
+        if (context.checkPermission(Manifest.permission.CAMERA, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
+            initCamera()
+        }
+    }
+
+    private fun initCamera() {
         mCamera = Camera.open(0)
         mCamera!!.setDisplayOrientation(90) // 固定为后置摄像头竖屏
 
@@ -116,7 +126,7 @@ class LicensePlateDiscernView(
         mCamera!!.parameters = parameters
 
         try {
-            mCamera!!.setPreviewDisplay(holder)
+            mCamera!!.setPreviewDisplay(mSurfaceHolder)
         } catch (e: IOException) {
         }
 
@@ -178,7 +188,7 @@ class LicensePlateDiscernView(
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         if (mCamera != null) {
-            mCamera!!.stopPreview()
+            mCanHandleDiscern = false
             mCamera!!.setPreviewCallback(null)
             mCamera!!.release()
             mCamera = null

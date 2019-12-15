@@ -48,9 +48,9 @@ class LprDiscernUtil {
 
         /**
          * 识别
-         * @param bitmap        需要识别的 bitmap
+         * @param bitmap        需要识别车牌的 bitmap
          * @param discernHandle discernPrepare 返回的 handle
-         * @return String[] 字牌号列表
+         * @return Array<String> 字牌号列表
          */
         fun discern(bitmap: Bitmap, discernHandle: Long): Array<String>? {
             val m = Mat(bitmap.width, bitmap.height, CvType.CV_8UC4)

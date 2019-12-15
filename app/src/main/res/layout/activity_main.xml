@@ -21,6 +21,34 @@
         app:lpd_scanLineColor="#FFFF00"
         app:lpd_scanLineSize="1dp" />
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="430dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_selAlbumBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="图库选择"
+            android:textColor="#50FFFFFF"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tv_flashBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="60dp"
+            android:text="闪光灯：开"
+            android:textColor="#50FFFFFF"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+
     <TextView
         android:id="@+id/tv_resultInfo"
         android:layout_width="wrap_content"

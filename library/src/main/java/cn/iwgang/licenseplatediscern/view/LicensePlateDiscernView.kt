@@ -3,6 +3,7 @@ package cn.iwgang.licenseplatediscern.view
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.Camera
@@ -90,6 +91,20 @@ class LicensePlateDiscernView(
         mLicensePlateRecognizer.onResume()
     }
 
+    /**
+     * 识别（一般用于选图库中的图片识别）
+     * @param bitmap 需要识别车牌的 bitmap
+     * @return Array<String> 字牌号列表
+     */
+    fun discern(bitmap: Bitmap): Array<String>? = mLicensePlateRecognizer.discern(bitmap)
+
+    /**
+     * 【需要文件读取权限】识别（一般用于选图库中的图片识别）
+     * @param picUrl 需要识别车牌的图片路径
+     * @return Array<String> 字牌号列表
+     */
+    fun discern(picUrl: String): Array<String>? = mLicensePlateRecognizer.discern(picUrl)
+
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         val taskStatus = mDiscernAsyncTask?.status
         if (!mCanHandleDiscern || null == mOnDiscernListener || taskStatus == AsyncTask.Status.PENDING || taskStatus == AsyncTask.Status.RUNNING) return
@@ -136,9 +151,33 @@ class LicensePlateDiscernView(
         mCamera!!.startPreview()
     }
 
-
+    /**
+     * 开启预览
+     */
     fun startPreview() {
         initCamera()
+    }
+
+    /**
+     * 打开闪光灯
+     */
+    fun openFlash() {
+        if (null != mCamera) {
+            val parameters = mCamera!!.parameters
+            parameters.flashMode = Camera.Parameters.FLASH_MODE_TORCH
+            mCamera!!.parameters = parameters
+        }
+    }
+
+    /**
+     * 关闭闪光灯
+     */
+    fun closeFlash() {
+        if (null != mCamera) {
+            val parameters = mCamera!!.parameters
+            parameters.flashMode = Camera.Parameters.FLASH_MODE_OFF
+            mCamera!!.parameters = parameters
+        }
     }
 
     /**

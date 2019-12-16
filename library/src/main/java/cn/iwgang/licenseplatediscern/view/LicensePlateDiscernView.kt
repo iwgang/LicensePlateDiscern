@@ -127,6 +127,8 @@ class LicensePlateDiscernView(
 
         mCamera!!.setPreviewCallback(this)
         mCamera!!.startPreview()
+
+        mCanHandleDiscern = true
     }
 
     /**

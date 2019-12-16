@@ -19,7 +19,6 @@
         app:lpd_isShowScanLine="true"
         app:lpd_maskColor="#8004040f"
         app:lpd_scanLineColor="#FFFF00"
-        app:lpd_scanLineDelayed="16"
         app:lpd_scanLineSize="1dp" />
 
     <LinearLayout

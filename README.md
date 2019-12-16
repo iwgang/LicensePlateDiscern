@@ -3,7 +3,7 @@
 # LicensePlateDiscern
 车牌识别，支持扫描识别和选图识别
 
-[下载体验DEMO](https://raw.githubusercontent.com/iwgang/GankCamp-React-Native/master/app/release/app-release.apk)
+[下载体验DEMO](https://raw.githubusercontent.com/iwgang/LicensePlateDiscern/master/app/release/app-release.apk)
 
 ### 效果图
 ![](https://raw.githubusercontent.com/iwgang/LicensePlateDiscern/master/xx.jpg)  

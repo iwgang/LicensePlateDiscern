@@ -30,6 +30,7 @@ class LicensePlateDiscernForeView(context: Context, attrs: AttributeSet) : View(
     private var mAngleStrokeWidth: Int = 0
     private var mAngleOffset: Int = 0
     private var isShowScanLine: Boolean = false
+    private var mScanLineDelayed: Long = 0
     private var mInitializeScanLineY: Int = 0
     private var mCurScanLineY: Int = 0
 
@@ -54,6 +55,7 @@ class LicensePlateDiscernForeView(context: Context, attrs: AttributeSet) : View(
         isShowScanLine = ta.getBoolean(R.styleable.LicensePlateDiscernView_lpd_isShowScanLine, true)
         val scanLineSize = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_scanLineSize, 3f).toInt()
         val scanLineColor = ta.getColor(R.styleable.LicensePlateDiscernView_lpd_scanLineColor, Color.GREEN)
+        mScanLineDelayed = ta.getInt(R.styleable.LicensePlateDiscernView_lpd_scanLineDelayed, 16).toLong()
         ta.recycle()
 
         if (maskColor != Color.TRANSPARENT) {
@@ -159,7 +161,7 @@ class LicensePlateDiscernForeView(context: Context, attrs: AttributeSet) : View(
         val right = mDiscernRect.right - mAngleStrokeWidth
 
         canvas.drawLine(left.toFloat(), mCurScanLineY.toFloat(), right.toFloat(), mCurScanLineY.toFloat(), mScanLinePaint!!)
-        postInvalidateDelayed(1, left, mDiscernRect.top, right, mDiscernRect.bottom)
+        postInvalidateDelayed(mScanLineDelayed, left, mDiscernRect.top, right, mDiscernRect.bottom)
     }
 
     /**

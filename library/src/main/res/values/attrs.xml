@@ -16,6 +16,7 @@
         <attr name="lpd_isShowScanLine" format="boolean" />
         <attr name="lpd_scanLineSize" format="dimension" />
         <attr name="lpd_scanLineColor" format="color" />
+        <attr name="lpd_scanLineDelayed" format="integer" />
     </declare-styleable>
 
 </resources>

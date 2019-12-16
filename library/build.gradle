@@ -1,6 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply from: './build_push_maven.gradle'
 
 android {
     compileSdkVersion rootProject.ext.android.compileSdkVersion
@@ -16,8 +17,7 @@ android {
         externalNativeBuild {
             cmake {
                 cppFlags "-std=gnu++11"
-                arguments "-DANDROID_TOOLCHAIN=gcc", "-DANDROID_ARM_NEON=TRUE", "-DANDROID_STL_FORCE_FEATURES=OFF"
-                // windows 下注释
+                arguments "-DANDROID_TOOLCHAIN=gcc", "-DANDROID_ARM_NEON=TRUE", "-DANDROID_STL_FORCE_FEATURES=OFF" // windows 下注释
             }
         }
     }

@@ -2,7 +2,7 @@ package cn.iwgang.licenseplatediscern.view
 
 import android.graphics.*
 import android.os.AsyncTask
-import cn.iwgang.licenseplatediscern.LicensePlateRecognizer
+import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
 import java.io.ByteArrayOutputStream
 
 typealias OnTaskDiscernListener = (String?) -> Unit
@@ -18,7 +18,6 @@ class DiscernAsyncTask constructor(
         private val previewHeight: Int,
         private val discernRect: Rect,
         private val data: ByteArray,
-        private val licensePlateRecognizer: LicensePlateRecognizer,
         private val onTaskDiscernListener: OnTaskDiscernListener
 ) : AsyncTask<Void, Void, String>() {
 
@@ -35,7 +34,7 @@ class DiscernAsyncTask constructor(
             val matrix = Matrix()
             matrix.postRotate(90f)
             val bitmap = Bitmap.createBitmap(bmp, discernRect.top, discernRect.left, discernRect.bottom - discernRect.top, discernRect.right - discernRect.left, matrix, true)
-            return licensePlateRecognizer.discern(bitmap)?.firstOrNull()
+            return LicensePlateDiscernCore.discern(bitmap)?.firstOrNull()
         } catch (ex: Exception) {
         }
         return null

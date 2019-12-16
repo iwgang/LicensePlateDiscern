@@ -12,12 +12,11 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.WindowManager
+import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
-//    private val mLicensePlateRecognizer by lazy { LicensePlateRecognizer(this) } // 不使用 LicensePlateDiscernView 的场景
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("StaticFieldLeak", "WrongThread", "SetTextI18n")
+    @SuppressLint("StaticFieldLeak", "SetTextI18n")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -89,8 +88,7 @@ class MainActivity : AppCompatActivity() {
                     FileUtil.getFileFromUri(uri, this)?.let { picPath ->
                         object : AsyncTask<Void, Void, Array<String>?>() {
                             override fun doInBackground(vararg params: Void?): Array<String>? {
-                                return cv_licensePlateDiscernView.discern(picPath)
-//                                return mLicensePlateRecognizer.discern(picPath)
+                                return LicensePlateDiscernCore.discern(this@MainActivity, picPath)
                             }
 
                             override fun onPostExecute(result: Array<String>?) {
@@ -107,13 +105,6 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        cv_licensePlateDiscernView.onResume()
-
-//        mLicensePlateRecognizer.onResume()
     }
 
 

@@ -3,7 +3,6 @@ package cn.iwgang.licenseplatediscern.view
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.Camera
@@ -14,7 +13,6 @@ import android.util.Size
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
-import cn.iwgang.licenseplatediscern.LicensePlateRecognizer
 import java.io.IOException
 import kotlin.math.abs
 
@@ -31,7 +29,6 @@ class LicensePlateDiscernView(
         attrs: AttributeSet,
         defStyleAttr: Int
 ) : FrameLayout(context, attrs, defStyleAttr), SurfaceHolder.Callback, Camera.PreviewCallback {
-    private val mLicensePlateRecognizer by lazy { LicensePlateRecognizer(context) }
     private lateinit var mLicensePlateDiscernForeView: LicensePlateDiscernForeView
     private lateinit var mOnTaskDiscernListener: OnTaskDiscernListener
 
@@ -87,24 +84,6 @@ class LicensePlateDiscernView(
         mCanHandleDiscern = true
     }
 
-    fun onResume() {
-        mLicensePlateRecognizer.onResume()
-    }
-
-    /**
-     * 识别（一般用于选图库中的图片识别）
-     * @param bitmap 需要识别车牌的 bitmap
-     * @return Array<String> 字牌号列表
-     */
-    fun discern(bitmap: Bitmap): Array<String>? = mLicensePlateRecognizer.discern(bitmap)
-
-    /**
-     * 【需要文件读取权限】识别（一般用于选图库中的图片识别）
-     * @param picUrl 需要识别车牌的图片路径
-     * @return Array<String> 字牌号列表
-     */
-    fun discern(picUrl: String): Array<String>? = mLicensePlateRecognizer.discern(picUrl)
-
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         val taskStatus = mDiscernAsyncTask?.status
         if (!mCanHandleDiscern || null == mOnDiscernListener || taskStatus == AsyncTask.Status.PENDING || taskStatus == AsyncTask.Status.RUNNING) return
@@ -115,8 +94,7 @@ class LicensePlateDiscernView(
                 previewHeight = size.height,
                 discernRect = mLicensePlateDiscernForeView.getDiscernRect(),
                 data = data,
-                onTaskDiscernListener = mOnTaskDiscernListener,
-                licensePlateRecognizer = mLicensePlateRecognizer
+                onTaskDiscernListener = mOnTaskDiscernListener
         ).apply { execute() }
     }
 

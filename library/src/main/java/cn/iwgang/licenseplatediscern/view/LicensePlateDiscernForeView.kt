@@ -41,19 +41,19 @@ class LicensePlateDiscernForeView(context: Context, attrs: AttributeSet) : View(
     @SuppressLint("CustomViewStyleable")
     private fun init(context: Context, attrs: AttributeSet) {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.LicensePlateDiscernView)
-        val discernRectTopMargin = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectTopMargin, 300f).toInt()
-        val discernRectLRMargin = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectLRMargin, 30f).toInt()
+        val discernRectTopMargin = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectTopMargin, dp2px(260f)).toInt()
+        val discernRectLRMargin = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectLRMargin, dp2px(30f)).toInt()
         val discernRectWidth = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectWidth, 0f).toInt()
-        val discernRectHeight = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectHeight, 200f).toInt()
+        val discernRectHeight = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_discernRectHeight, dp2px(120f)).toInt()
         val maskColor = ta.getColor(R.styleable.LicensePlateDiscernView_lpd_maskColor, 0x50000000)
-        mAngleLength = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_angleLength, 0f).toInt()
-        mAngleStrokeWidth = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_angleStrokeWidth, 0f).toInt()
+        mAngleLength = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_angleLength, dp2px(22f)).toInt()
+        mAngleStrokeWidth = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_angleStrokeWidth, dp2px(3f)).toInt()
         mAngleOffset = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_angleOffset, 0f).toInt()
         val angleColor = ta.getColor(R.styleable.LicensePlateDiscernView_lpd_angleColor, Color.GREEN)
         val borderSize = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_borderSize, 0f).toInt()
         val borderColor = ta.getColor(R.styleable.LicensePlateDiscernView_lpd_borderColor, Color.WHITE)
         isShowScanLine = ta.getBoolean(R.styleable.LicensePlateDiscernView_lpd_isShowScanLine, true)
-        val scanLineSize = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_scanLineSize, 3f).toInt()
+        val scanLineSize = ta.getDimension(R.styleable.LicensePlateDiscernView_lpd_scanLineSize, dp2px(1f)).toInt()
         val scanLineColor = ta.getColor(R.styleable.LicensePlateDiscernView_lpd_scanLineColor, Color.GREEN)
         mScanLineDelayed = ta.getInt(R.styleable.LicensePlateDiscernView_lpd_scanLineDelayed, 16).toLong()
         ta.recycle()
@@ -169,5 +169,8 @@ class LicensePlateDiscernForeView(context: Context, attrs: AttributeSet) : View(
      * @return Rect
      */
     fun getDiscernRect() = mDiscernRect
+
+
+    private fun dp2px(dpValue: Float) = (dpValue * resources.displayMetrics.density + 0.5f)
 
 }

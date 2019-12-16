@@ -8,18 +8,9 @@
         android:id="@+id/cv_licensePlateDiscernView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:lpd_angleColor="#FF5307"
-        app:lpd_angleLength="22dp"
-        app:lpd_angleStrokeWidth="3dp"
         app:lpd_borderColor="#80FFFFFF"
         app:lpd_borderSize="0.5dp"
-        app:lpd_discernRectHeight="117dp"
-        app:lpd_discernRectLRMargin="30dp"
-        app:lpd_discernRectTopMargin="260dp"
-        app:lpd_isShowScanLine="true"
-        app:lpd_maskColor="#8004040f"
-        app:lpd_scanLineColor="#FFFF00"
-        app:lpd_scanLineSize="1dp" />
+        app:lpd_maskColor="#8004040f" />
 
     <LinearLayout
         android:layout_width="wrap_content"

@@ -33,5 +33,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.android.support:appcompat-v7:27.1.1'
 
+//    implementation 'com.github.iwgang:licenseplatediscern:1.0'
+
     implementation project(':library')
 }

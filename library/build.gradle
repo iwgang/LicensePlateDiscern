@@ -31,5 +31,6 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(':openCVLibrary346')
+//    implementation project(':openCVLibrary346')
+    implementation 'com.github.iwgang:opencvlibrary346:1.0'
 }

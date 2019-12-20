@@ -88,10 +88,10 @@ afterEvaluate { project ->
         }
     }
 
-    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-        classifier = 'javadoc'
-        from androidJavadocs.destinationDir
-    }
+//    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+//        classifier = 'javadoc'
+//        from androidJavadocs.destinationDir
+//    }
 
     task androidSourcesJar(type: Jar) {
         classifier = 'sources'
@@ -100,7 +100,7 @@ afterEvaluate { project ->
 
     artifacts {
         archives androidSourcesJar
-        archives androidJavadocsJar
+//        archives androidJavadocsJar
     }
 
 }

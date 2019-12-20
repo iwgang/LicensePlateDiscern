@@ -58,7 +58,7 @@ Java_cn_iwgang_licenseplatediscern_lpr_LprDiscernCore_init(
 JNIEXPORT jstring JNICALL
 Java_cn_iwgang_licenseplatediscern_lpr_LprDiscernCore_discern(
         JNIEnv *env, jobject obj,
-        jlong matPtr, jlong object_pr) {
+        jlong matPtr, jlong object_pr, jfloat confidence) {
     pr::PipelinePR *PR = (pr::PipelinePR *) object_pr;
     cv::Mat &mRgb = *(cv::Mat *) matPtr;
     cv::Mat rgb;
@@ -69,11 +69,10 @@ Java_cn_iwgang_licenseplatediscern_lpr_LprDiscernCore_discern(
         std::vector<pr::PlateInfo> list_res = PR->RunPiplineAsImage(rgb, pr::SEGMENTATION_FREE_METHOD);
         std::string concat_results;
         for (auto one:list_res) {
-            if (one.confidence > 0.9) {
-//                char *confidence_str = (char *) malloc(sizeof(char) * 16);
-//                sprintf(confidence_str, "%f", one.confidence);
-//                concat_results += one.getPlateName() + ":" + confidence_str + ",";
-                concat_results += one.getPlateName() + ",";
+            if (one.confidence > confidence) {
+                char *confidence_str = (char *) malloc(sizeof(char) * 16);
+                sprintf(confidence_str, "%f", one.confidence);
+                concat_results += one.getPlateName() + ":" + confidence_str + ",";
             }
         }
         concat_results = concat_results.substr(0, concat_results.size() - 1);

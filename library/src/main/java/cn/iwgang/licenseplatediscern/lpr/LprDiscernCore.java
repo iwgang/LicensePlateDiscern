@@ -13,6 +13,6 @@ public class LprDiscernCore {
                                    String charRecognization_proto, String charRecognization_caffemodel,
                                    String segmentation_free_prototxt, String segmentation_free_caffemodel);
 
-    public static native String discern(long inputMat, long object);
+    public static native String discern(long inputMat, long object, float confidence);
 
 }

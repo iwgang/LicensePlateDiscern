@@ -6,11 +6,11 @@
 [下载体验DEMO](https://raw.githubusercontent.com/iwgang/LicensePlateDiscern/master/app/release/app-release.apk)
 
 ### 效果图
-![](https://raw.githubusercontent.com/iwgang/LicensePlateDiscern/master/xx.jpg)  
+![](https://raw.githubusercontent.com/iwgang/LicensePlateDiscern/master/xx1.png)  
 
 ### gradle
 ```
-implementation 'com.github.iwgang:licenseplatediscern:1.0'
+implementation 'com.github.iwgang:licenseplatediscern:1.1'
 
 build.gradle
 ndk {
@@ -23,8 +23,8 @@ ndk {
 // 场景1：使用 LicensePlateDiscernView（需要相机权限）
 
 // 识别结果回调
-cv_licensePlateDiscernView.setOnDiscernListener { lp ->
-    tv_resultInfo.text = "识别结果：$lp"
+cv_licensePlateDiscernView.setOnDiscernListener { lpInfo ->
+    tv_resultInfo.text = "识别结果：${lpInfo.licensePlate}（${lpInfo.confidence}）"
     cv_licensePlateDiscernView.reDiscern()
 }
 
@@ -36,9 +36,9 @@ cv_licensePlateDiscernView.closeFlash()
 // 场景2：用作选图识别等
 
 // 图片路径识别（需要读取SD卡权限）
-val lps = LicensePlateDiscernCore.discern(context, picPath)
+val lps = LicensePlateDiscernCore.discern(context, picPath, confidence)
 // 图片 bitmap 识别
-val lps = LicensePlateDiscernCore.discern(bitmap)
+val lps = LicensePlateDiscernCore.discern(bitmap, confidence)
 ```
 
 ### LicensePlateDiscernView 布局
@@ -70,6 +70,8 @@ val lps = LicensePlateDiscernCore.discern(bitmap)
 | lpd_scanLineSize | dimension | 1dp | 扫描线 size |
 | lpd_scanLineColor | color | Color.GREEN | 扫描线颜色 |
 | lpd_scanLineDelayed | integer | 16 | 扫描线延迟间距延迟时间，用于调整扫描线动画速度 |
+| lpd_discernConfidence | float | 0.9 | 识别可信度 0 - 1 |
+| lpd_doubleTapZoom | boolean | true | 双击变焦放大/缩小 |
 
 
 ### 想自己拉代码编译修改？

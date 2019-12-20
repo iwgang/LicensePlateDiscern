@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.WindowManager
 import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
+import cn.iwgang.licenseplatediscern.LicensePlateInfo
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -33,8 +34,8 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun initView() {
-        cv_licensePlateDiscernView.setOnDiscernListener { lp ->
-            tv_resultInfo.text = "识别结果：$lp"
+        cv_licensePlateDiscernView.setOnDiscernListener { lpInfo ->
+            tv_resultInfo.text = "识别结果：${lpInfo.licensePlate}（${lpInfo.confidence}）"
             cv_licensePlateDiscernView.reDiscern()
         }
 
@@ -82,26 +83,24 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        when (requestCode) {
-            REQUEST_CODE_ALBUM -> {
-                data?.data?.let { uri ->
-                    FileUtil.getFileFromUri(uri, this)?.let { picPath ->
-                        object : AsyncTask<Void, Void, Array<String>?>() {
-                            override fun doInBackground(vararg params: Void?): Array<String>? {
-                                return LicensePlateDiscernCore.discern(this@MainActivity, picPath)
-                            }
+        if (REQUEST_CODE_ALBUM == requestCode) {
+            data?.data?.let { uri ->
+                FileUtil.getFileFromUri(uri, this)?.let { picPath ->
+                    object : AsyncTask<Void, Void, Array<LicensePlateInfo>?>() {
+                        override fun doInBackground(vararg params: Void?): Array<LicensePlateInfo>? {
+                            return LicensePlateDiscernCore.discern(this@MainActivity, picPath, 0.8F)
+                        }
 
-                            override fun onPostExecute(result: Array<String>?) {
-                                super.onPostExecute(result)
+                        override fun onPostExecute(result: Array<LicensePlateInfo>?) {
+                            super.onPostExecute(result)
 
-                                if (null == result || result.isEmpty()) {
-                                    tv_resultInfo.text = "识别结果：未识别到车牌"
-                                } else {
-                                    tv_resultInfo.text = "识别结果：${result.joinToString()}"
-                                }
+                            if (null == result || result.isEmpty()) {
+                                tv_resultInfo.text = "识别结果：未识别到车牌"
+                            } else {
+                                tv_resultInfo.text = "识别结果：${result.joinToString()}"
                             }
-                        }.execute()
-                    }
+                        }
+                    }.execute()
                 }
             }
         }

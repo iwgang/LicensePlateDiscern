@@ -10,6 +10,7 @@
         android:layout_height="match_parent"
         app:lpd_borderColor="#80FFFFFF"
         app:lpd_borderSize="0.5dp"
+        app:lpd_discernConfidence="0.95"
         app:lpd_maskColor="#8004040f" />
 
     <LinearLayout

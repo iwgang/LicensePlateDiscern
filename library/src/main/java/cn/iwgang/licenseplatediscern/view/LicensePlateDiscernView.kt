@@ -1,22 +1,27 @@
 package cn.iwgang.licenseplatediscern.view
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.Camera
 import android.os.AsyncTask
-import android.text.TextUtils
 import android.util.AttributeSet
 import android.util.Size
+import android.view.GestureDetector
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.FrameLayout
+import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
+import cn.iwgang.licenseplatediscern.LicensePlateInfo
+import cn.iwgang.licenseplatediscern.R
 import java.io.IOException
 import kotlin.math.abs
 
-typealias OnDiscernListener = (String) -> Unit
+
+typealias OnDiscernListener = (LicensePlateInfo) -> Unit
 
 /**
  * 车牌识别 View
@@ -28,7 +33,8 @@ class LicensePlateDiscernView(
         context: Context,
         attrs: AttributeSet,
         defStyleAttr: Int
-) : FrameLayout(context, attrs, defStyleAttr), SurfaceHolder.Callback, Camera.PreviewCallback {
+) : FrameLayout(context, attrs, defStyleAttr), SurfaceHolder.Callback, Camera.PreviewCallback, OnGestureListener {
+    private val mGestureDetector by lazy { GestureDetector(context, DiscernViewGestureDetector(this)) }
     private lateinit var mLicensePlateDiscernForeView: LicensePlateDiscernForeView
     private lateinit var mOnTaskDiscernListener: OnTaskDiscernListener
 
@@ -37,7 +43,10 @@ class LicensePlateDiscernView(
     private var mDiscernAsyncTask: DiscernAsyncTask? = null
     private var mCanHandleDiscern = true
     private var mOnDiscernListener: OnDiscernListener? = null
-
+    private var mDiscernConfidence: Float = LicensePlateDiscernCore.DEFAULT_CONFIDENCE
+    private var mDoubleTapZoom: Boolean = true
+    private var mSurfaceWidth: Int = 0
+    private var mSurfaceHeight: Int = 0
 
     constructor(context: Context, attributeSet: AttributeSet) : this(context, attributeSet, 0)
 
@@ -45,6 +54,7 @@ class LicensePlateDiscernView(
         initView(context, attrs)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun initView(context: Context, attrs: AttributeSet) {
         setBackgroundColor(Color.BLACK)
 
@@ -55,14 +65,29 @@ class LicensePlateDiscernView(
         }
         addView(surfaceView)
 
+        val ta = context.obtainStyledAttributes(attrs, R.styleable.LicensePlateDiscernView)
+        mDiscernConfidence = ta.getFloat(R.styleable.LicensePlateDiscernView_lpd_discernConfidence, LicensePlateDiscernCore.DEFAULT_CONFIDENCE)
+        mDoubleTapZoom = ta.getBoolean(R.styleable.LicensePlateDiscernView_lpd_doubleTapZoom, true)
+        if (mDiscernConfidence > 1 || mDiscernConfidence <= 0) {
+            mDiscernConfidence = LicensePlateDiscernCore.DEFAULT_CONFIDENCE
+        }
+        ta.recycle()
+
+        if (mDoubleTapZoom) {
+            surfaceView.setOnTouchListener { _, event ->
+                mGestureDetector.onTouchEvent(event)
+                true
+            }
+        }
+
         mLicensePlateDiscernForeView = LicensePlateDiscernForeView(context, attrs)
         addView(mLicensePlateDiscernForeView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
 
         mOnTaskDiscernListener = object : OnTaskDiscernListener {
-            override fun invoke(lp: String?) {
-                if (!TextUtils.isEmpty(lp)) {
+            override fun invoke(lpInfo: LicensePlateInfo?) {
+                if (null != lpInfo) {
                     mCanHandleDiscern = false
-                    mOnDiscernListener?.invoke(lp!!)
+                    mOnDiscernListener?.invoke(lpInfo)
                 }
             }
         }
@@ -84,6 +109,19 @@ class LicensePlateDiscernView(
         mCanHandleDiscern = true
     }
 
+    override fun onDiscernViewDoubleTap() {
+        if (null == mCamera) return
+
+        val parameters = mCamera!!.parameters
+        if (parameters.isZoomSupported) {
+            if (parameters.zoom == 0) {
+                zoom()
+            } else {
+                zoomOut()
+            }
+        }
+    }
+
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {
         val taskStatus = mDiscernAsyncTask?.status
         if (!mCanHandleDiscern || null == mOnDiscernListener || taskStatus == AsyncTask.Status.PENDING || taskStatus == AsyncTask.Status.RUNNING) return
@@ -93,14 +131,10 @@ class LicensePlateDiscernView(
                 previewWidth = size.width,
                 previewHeight = size.height,
                 discernRect = mLicensePlateDiscernForeView.getDiscernRect(),
+                discernConfidence = mDiscernConfidence,
                 data = data,
                 onTaskDiscernListener = mOnTaskDiscernListener
         ).apply { execute() }
-    }
-
-    override fun surfaceCreated(holder: SurfaceHolder) {
-        mSurfaceHolder = holder
-        initCamera()
     }
 
     private fun initCamera() {
@@ -161,20 +195,52 @@ class LicensePlateDiscernView(
     }
 
     /**
+     * 放大
+     * return true 成功，false 失败（有可能因为不支持变焦导致失败）
+     */
+    private fun zoom(): Boolean {
+        if (null == mCamera) return false
+
+        val parameters = mCamera!!.parameters
+        if (parameters.isZoomSupported) {
+            parameters.zoom = parameters.zoomRatios.size / 2
+            mCamera!!.parameters = parameters
+            return true
+        }
+        return false
+    }
+
+    /**
+     * 缩小（恢复正常）
+     * return true 成功，false 失败（有可能因为不支持变焦导致失败）
+     */
+    private fun zoomOut(): Boolean {
+        if (null == mCamera) return false
+
+        val parameters = mCamera!!.parameters
+        if (parameters.isZoomSupported) {
+            parameters.zoom = 0
+            mCamera!!.parameters = parameters
+            return true
+        }
+        return false
+    }
+
+
+    /**
      * 查找最好的预览尺寸
      *
      * @param supportSizeList supportSizeList
      * @return Size
      */
     private fun findBestPreviewSize(supportSizeList: List<Camera.Size>): Size {
-        val displayMetrics = resources.displayMetrics
         var bestWidth = 0
         var bestHeight = 0
         var lastSupportDiff = Integer.MAX_VALUE
         for (previewSize in supportSizeList) {
             val curSupportWidth = previewSize.width
             val curSupportHeight = previewSize.height
-            val curSupportDiff = abs(curSupportWidth - displayMetrics.heightPixels) + abs(curSupportHeight - displayMetrics.widthPixels)
+            val curSupportDiff = abs(curSupportWidth - mSurfaceHeight) + abs(curSupportHeight - mSurfaceWidth)
             if (curSupportDiff == 0) {
                 bestWidth = curSupportWidth
                 bestHeight = curSupportHeight
@@ -186,7 +252,7 @@ class LicensePlateDiscernView(
             }
         }
 
-        return if (bestWidth > 0 && bestHeight > 0) Size(bestWidth, bestHeight) else Size(displayMetrics.heightPixels shr 3 shl 3, displayMetrics.widthPixels shr 3 shl 3)
+        return if (bestWidth > 0 && bestHeight > 0) Size(bestWidth, bestHeight) else Size(mSurfaceHeight shr 3 shl 3, mSurfaceWidth shr 3 shl 3)
     }
 
     /**
@@ -214,7 +280,14 @@ class LicensePlateDiscernView(
         return context.checkPermission(Manifest.permission.CAMERA, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED
     }
 
-    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {}
+    override fun surfaceCreated(holder: SurfaceHolder) {}
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        mSurfaceHolder = holder
+        mSurfaceWidth = width
+        mSurfaceHeight = height
+        initCamera()
+    }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         if (mCamera != null) {
@@ -222,6 +295,7 @@ class LicensePlateDiscernView(
             mCamera!!.setPreviewCallback(null)
             mCamera!!.release()
             mCamera = null
+            mSurfaceHolder = null
         }
     }
 

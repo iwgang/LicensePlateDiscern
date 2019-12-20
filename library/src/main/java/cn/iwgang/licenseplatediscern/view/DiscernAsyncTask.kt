@@ -3,9 +3,10 @@ package cn.iwgang.licenseplatediscern.view
 import android.graphics.*
 import android.os.AsyncTask
 import cn.iwgang.licenseplatediscern.LicensePlateDiscernCore
+import cn.iwgang.licenseplatediscern.LicensePlateInfo
 import java.io.ByteArrayOutputStream
 
-typealias OnTaskDiscernListener = (String?) -> Unit
+typealias OnTaskDiscernListener = (LicensePlateInfo?) -> Unit
 
 /**
  * 车牌识别处理任务
@@ -18,10 +19,11 @@ class DiscernAsyncTask constructor(
         private val previewHeight: Int,
         private val discernRect: Rect,
         private val data: ByteArray,
+        private val discernConfidence: Float,
         private val onTaskDiscernListener: OnTaskDiscernListener
-) : AsyncTask<Void, Void, String>() {
+) : AsyncTask<Void, Void, LicensePlateInfo>() {
 
-    override fun doInBackground(vararg params: Void): String? {
+    override fun doInBackground(vararg params: Void): LicensePlateInfo? {
         try {
             val image = YuvImage(data, ImageFormat.NV21, previewWidth, previewHeight, null)
             val stream = ByteArrayOutputStream(data.size)
@@ -34,14 +36,14 @@ class DiscernAsyncTask constructor(
             val matrix = Matrix()
             matrix.postRotate(90f)
             val bitmap = Bitmap.createBitmap(bmp, discernRect.top, discernRect.left, discernRect.bottom - discernRect.top, discernRect.right - discernRect.left, matrix, true)
-            return LicensePlateDiscernCore.discern(bitmap)?.firstOrNull()
+            return LicensePlateDiscernCore.discern(bitmap, discernConfidence)?.firstOrNull()
         } catch (ex: Exception) {
         }
         return null
     }
 
-    override fun onPostExecute(str: String?) {
-        super.onPostExecute(str)
-        onTaskDiscernListener(str)
+    override fun onPostExecute(info: LicensePlateInfo?) {
+        super.onPostExecute(info)
+        onTaskDiscernListener(info)
     }
 }

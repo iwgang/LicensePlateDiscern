@@ -17,6 +17,8 @@
         <attr name="lpd_scanLineSize" format="dimension" />
         <attr name="lpd_scanLineColor" format="color" />
         <attr name="lpd_scanLineDelayed" format="integer" />
+        <attr name="lpd_discernConfidence" format="float" />
+        <attr name="lpd_doubleTapZoom" format="boolean" />
     </declare-styleable>
 
 </resources>

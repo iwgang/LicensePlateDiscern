@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.text.TextUtils
 import android.util.Log
+import cn.iwgang.licenseplatediscern.LicensePlateInfo
 import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.CvType
@@ -24,6 +25,7 @@ object LprDiscernHelper {
 
     /**
      * 初始化
+     * @param context context
      */
     fun init(context: Context) {
         Thread {
@@ -40,22 +42,49 @@ object LprDiscernHelper {
     /**
      * 识别
      * @param bitmap        需要识别车牌的 bitmap
-     * @return Array<String> 字牌号列表
+     * @param confidence    可信度 0 - 1
+     * @return Array<LicensePlateInfo> 车牌信息列表
      */
-    fun discern(bitmap: Bitmap): Array<String>? {
+    fun discern(bitmap: Bitmap, confidence: Float): Array<LicensePlateInfo>? {
         if (null != mLprDiscernHandle) {
             val m = Mat(bitmap.width, bitmap.height, CvType.CV_8UC4)
             Utils.bitmapToMat(bitmap, m)
-            val oriLp = LprDiscernCore.discern(m.nativeObjAddr, mLprDiscernHandle!!)
+            val oriLp = LprDiscernCore.discern(m.nativeObjAddr, mLprDiscernHandle!!, confidence)
             if (!TextUtils.isEmpty(oriLp)) {
                 return if (oriLp!!.contains(",")) {
-                    oriLp.split(",").filter { !TextUtils.isEmpty(it) }.toTypedArray()
+                    oriLp.split(",").filter { !TextUtils.isEmpty(it) }.mapNotNull { convertLicensePlateInfo(it) }.toTypedArray()
                 } else {
-                    arrayOf(oriLp)
+                    val retLpInfo = convertLicensePlateInfo(oriLp)
+                    if (null != retLpInfo) arrayOf(retLpInfo) else null
                 }
             }
         }
         return null
+    }
+
+
+    /**
+     * 转换成 LicensePlateInfo 对象
+     * @param infoStr 识别结果字符串 eg：川A888888:0.98
+     * @return LicensePlateInfo 车牌信息
+     */
+    private fun convertLicensePlateInfo(infoStr: String): LicensePlateInfo? {
+        val infoStrArray = infoStr.split(":")
+        val fixLp = fixLicensePlate(infoStrArray[0])
+        return if (!TextUtils.isEmpty(fixLp)) LicensePlateInfo(fixLp!!, infoStrArray[1].toFloat()) else null
+    }
+
+    /**
+     * 校正车牌
+     * @param lp 原车牌号
+     * @return String 校正后的车牌号
+     */
+    private fun fixLicensePlate(lp: String): String? {
+        // 校正第2位是数字的，如 川1A888888
+        if (lp[1].isDigit()) {
+            return if (lp.length >= 8) "${lp[0]}${lp.substring(2, lp.length)}" else null
+        }
+        return lp
     }
 
     /**
@@ -79,6 +108,7 @@ object LprDiscernHelper {
 
     /**
      * 复制Assets中的识别模块
+     * @param context Context
      */
     private fun copyAssetsDiscernModel(context: Context) {
         val savePathFile = File("${context.cacheDir}${File.separator}$ASSETS_MODEL_DIR_NAME")
@@ -100,6 +130,11 @@ object LprDiscernHelper {
         }
     }
 
+    /**
+     * 获取识别模型路径
+     * @param fileName 识别模型文件名称
+     * @return String 识别模型路径
+     */
     private fun getDiscernModelPath(fileName: String) = "$ASSETS_MODEL_DIR_NAME${File.separator}$fileName"
 
 }

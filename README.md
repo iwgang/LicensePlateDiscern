@@ -20,11 +20,16 @@ ndk {
 
 ### 代码
 ``` kotlin
+// 初始化（建议在 Application 中）
+LicensePlateDiscernCore.init(this)
+
+
 // 场景1：使用 LicensePlateDiscernView（需要相机权限）
 
 // 识别结果回调
 cv_licensePlateDiscernView.setOnDiscernListener { lpInfo ->
     tv_resultInfo.text = "识别结果：${lpInfo.licensePlate}（${lpInfo.confidence}）"
+    // 调用 reDiscern() 方法后才会重新再识别，否则 setOnDiscernListener 不会再回调
     cv_licensePlateDiscernView.reDiscern()
 }
 
